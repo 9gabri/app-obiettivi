@@ -1,4 +1,4 @@
-const CACHE_NAME = "app-obiettivi-v2";
+const CACHE_NAME = "app-obiettivi-v3";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -13,6 +13,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_FILES))
   );
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
@@ -23,8 +24,14 @@ self.addEventListener("activate", (event) => {
           .filter((cacheName) => cacheName !== CACHE_NAME)
           .map((cacheName) => caches.delete(cacheName))
       )
-    )
+    ).then(() => self.clients.claim())
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("fetch", (event) => {
