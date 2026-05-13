@@ -16,6 +16,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -138,6 +142,75 @@ h2 {
   gap: 10px;
 }
 
+.task-type-field,
+.repeat-field,
+.weekday-options {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  border: 0;
+  padding: 0;
+}
+
+.task-type-field legend,
+.repeat-field legend,
+.weekday-options legend {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.radio-option,
+.weekday-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.radio-option input,
+.weekday-options input {
+  width: 22px;
+  min-height: 22px;
+  accent-color: var(--primary);
+}
+
+.recurring-options {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.recurring-date-row {
+  display: grid;
+  gap: 8px;
+}
+
+.recurring-date-row label {
+  margin-bottom: 0;
+}
+
+.weekday-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-message {
+  min-height: 22px;
+  margin: 12px 0 0;
+  font-weight: 700;
+}
+
+.form-message.error {
+  color: var(--danger);
+}
+
+.form-message.success {
+  color: var(--primary);
+}
+
 .secondary-button {
   background: #e7eee9;
   color: var(--primary-dark);
@@ -255,6 +328,20 @@ h2 {
   grid-column: 1 / -1;
 }
 
+.task-item.deleting {
+  grid-template-columns: 1fr;
+}
+
+.delete-choice-text {
+  margin-bottom: 0;
+  font-weight: 700;
+}
+
+.delete-choice-actions {
+  display: grid;
+  gap: 8px;
+}
+
 @media (min-width: 560px) {
   .app {
     padding-top: 34px;
@@ -275,6 +362,21 @@ h2 {
     grid-template-columns: 1fr 150px auto;
   }
 
+  .recurring-options {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .repeat-field,
+  .weekday-options,
+  .form-message {
+    grid-column: 1 / -1;
+  }
+
+  .weekday-options {
+    grid-template-columns: repeat(7, auto);
+    justify-content: start;
+  }
+
   .task-item {
     grid-template-columns: auto 1fr auto;
   }
@@ -282,5 +384,10 @@ h2 {
   .task-actions {
     grid-column: auto;
     grid-template-columns: auto auto;
+  }
+
+  .delete-choice-actions {
+    grid-template-columns: auto auto auto;
+    justify-content: start;
   }
 }

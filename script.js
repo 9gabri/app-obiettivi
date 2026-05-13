@@ -1,6 +1,7 @@
 const STORAGE_KEY = "obiettiviGiornalieri";
 const CATEGORIES = ["Fisico", "Studio", "Lavoro", "Altro"];
 const DEFAULT_CATEGORY = "Altro";
+const MAX_RECURRING_TASKS = 366;
 
 const datePicker = document.getElementById("datePicker");
 const todayButton = document.getElementById("todayButton");
@@ -10,6 +11,11 @@ const progressFill = document.getElementById("progressFill");
 const taskForm = document.getElementById("taskForm");
 const taskInput = document.getElementById("taskInput");
 const categorySelect = document.getElementById("categorySelect");
+const recurringOptions = document.getElementById("recurringOptions");
+const recurringStartDate = document.getElementById("recurringStartDate");
+const recurringEndDate = document.getElementById("recurringEndDate");
+const weekdayOptions = document.getElementById("weekdayOptions");
+const formMessage = document.getElementById("formMessage");
 const taskList = document.getElementById("taskList");
 const emptyMessage = document.getElementById("emptyMessage");
 
@@ -17,24 +23,44 @@ let tasksByDate = loadTasks();
 let selectedDate = getTodayKey();
 
 datePicker.value = selectedDate;
+recurringStartDate.value = selectedDate;
+recurringEndDate.value = selectedDate;
 render();
 
 todayButton.addEventListener("click", () => {
   selectedDate = getTodayKey();
   datePicker.value = selectedDate;
+  recurringStartDate.value = selectedDate;
   render();
 });
 
 datePicker.addEventListener("change", () => {
   selectedDate = datePicker.value || getTodayKey();
+  recurringStartDate.value = selectedDate;
   render();
+});
+
+taskForm.addEventListener("change", (event) => {
+  if (event.target.matches('input[name="taskType"]')) {
+    updateRecurringVisibility();
+  }
+
+  if (event.target.matches('input[name="repeatType"]')) {
+    updateWeekdayVisibility();
+  }
 });
 
 taskForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  clearFormMessage();
 
   const text = taskInput.value.trim();
   if (!text) return;
+
+  if (getSelectedTaskType() === "recurring") {
+    createRecurringTasks(text, normalizeCategory(categorySelect.value));
+    return;
+  }
 
   const task = {
     id: createTaskId(),
@@ -63,8 +89,20 @@ taskList.addEventListener("click", (event) => {
     render();
   }
 
-  if (event.target.matches(".delete-button")) {
+  if (event.target.matches(".delete-one-button")) {
     deleteTask(taskId);
+  }
+
+  if (event.target.matches(".delete-series-button")) {
+    deleteRecurringSeries(taskId);
+  }
+
+  if (event.target.matches(".cancel-delete-button")) {
+    render();
+  }
+
+  if (event.target.matches(".delete-button")) {
+    requestDeleteTask(taskId);
   }
 
   if (event.target.matches(".edit-button")) {
@@ -104,7 +142,8 @@ function loadTasks() {
           id: task.id,
           text: task.text,
           completed: task.completed,
-          category: normalizeCategory(task.category)
+          category: normalizeCategory(task.category),
+          ...(isValidRecurringId(task.recurringId) ? { recurringId: task.recurringId } : {})
         }));
 
       if (cleanTasks.length > 0) {
@@ -125,6 +164,57 @@ function saveTasks() {
 function saveAndRender() {
   saveTasks();
   render();
+}
+
+function createRecurringTasks(text, category) {
+  const startDateKey = recurringStartDate.value;
+  const endDateKey = recurringEndDate.value;
+  const repeatType = getSelectedRepeatType();
+  const selectedWeekdays = getSelectedWeekdays();
+
+  if (!isValidDateKey(startDateKey) || !isValidDateKey(endDateKey)) {
+    showFormMessage("Seleziona una data inizio e una data fine valide.", "error");
+    return;
+  }
+
+  if (endDateKey < startDateKey) {
+    showFormMessage("La data fine non può essere precedente alla data inizio.", "error");
+    return;
+  }
+
+  if (repeatType === "weekdays" && selectedWeekdays.length === 0) {
+    showFormMessage("Seleziona almeno un giorno della settimana.", "error");
+    return;
+  }
+
+  const dateKeys = getRecurringDateKeys(startDateKey, endDateKey, repeatType, selectedWeekdays);
+
+  if (dateKeys.length === 0) {
+    showFormMessage("Nessuna data corrisponde ai giorni selezionati.", "error");
+    return;
+  }
+
+  if (dateKeys.length > MAX_RECURRING_TASKS) {
+    showFormMessage("Puoi creare al massimo 366 attività ricorrenti alla volta.", "error");
+    return;
+  }
+
+  const recurringId = createTaskId();
+
+  dateKeys.forEach((dateKey) => {
+    ensureTasksForDate(dateKey).push({
+      id: createTaskId(),
+      text,
+      completed: false,
+      category,
+      recurringId
+    });
+  });
+
+  taskInput.value = "";
+  categorySelect.value = DEFAULT_CATEGORY;
+  showFormMessage(`Create ${dateKeys.length} attività ricorrenti.`, "success");
+  saveAndRender();
 }
 
 // Aggiorna data, progresso e lista delle attivita' mostrate.
@@ -201,11 +291,15 @@ function getTasksForSelectedDate() {
 }
 
 function ensureTasksForSelectedDate() {
-  if (!tasksByDate[selectedDate]) {
-    tasksByDate[selectedDate] = [];
+  return ensureTasksForDate(selectedDate);
+}
+
+function ensureTasksForDate(dateKey) {
+  if (!tasksByDate[dateKey]) {
+    tasksByDate[dateKey] = [];
   }
 
-  return tasksByDate[selectedDate];
+  return tasksByDate[dateKey];
 }
 
 function findTask(taskId) {
@@ -214,6 +308,73 @@ function findTask(taskId) {
 
 function deleteTask(taskId) {
   tasksByDate[selectedDate] = getTasksForSelectedDate().filter((task) => task.id !== taskId);
+  saveAndRender();
+}
+
+function requestDeleteTask(taskId) {
+  const task = findTask(taskId);
+  if (!task) return;
+
+  if (!task.recurringId) {
+    deleteTask(taskId);
+    return;
+  }
+
+  showRecurringDeleteOptions(taskId);
+}
+
+function showRecurringDeleteOptions(taskId) {
+  const task = findTask(taskId);
+  if (!task) return;
+
+  render();
+
+  const taskItem = taskList.querySelector(`[data-id="${taskId}"]`);
+  if (!taskItem) return;
+
+  taskItem.classList.add("deleting");
+  taskItem.innerHTML = "";
+
+  const message = document.createElement("p");
+  message.className = "delete-choice-text";
+  message.textContent = "Vuoi eliminare solo questo giorno o tutta la serie?";
+
+  const actions = document.createElement("div");
+  actions.className = "delete-choice-actions";
+
+  const oneButton = document.createElement("button");
+  oneButton.className = "delete-one-button";
+  oneButton.type = "button";
+  oneButton.textContent = "Solo questo giorno";
+
+  const seriesButton = document.createElement("button");
+  seriesButton.className = "delete-series-button delete-button";
+  seriesButton.type = "button";
+  seriesButton.textContent = "Tutta la serie";
+
+  const cancelButton = document.createElement("button");
+  cancelButton.className = "cancel-delete-button secondary-button";
+  cancelButton.type = "button";
+  cancelButton.textContent = "Annulla";
+
+  actions.append(oneButton, seriesButton, cancelButton);
+  taskItem.append(message, actions);
+}
+
+function deleteRecurringSeries(taskId) {
+  const task = findTask(taskId);
+  if (!task || !task.recurringId) return;
+
+  Object.keys(tasksByDate).forEach((dateKey) => {
+    tasksByDate[dateKey] = tasksByDate[dateKey].filter(
+      (savedTask) => savedTask.recurringId !== task.recurringId
+    );
+
+    if (tasksByDate[dateKey].length === 0) {
+      delete tasksByDate[dateKey];
+    }
+  });
+
   saveAndRender();
 }
 
@@ -286,11 +447,66 @@ function saveEditedTask(taskItem) {
 
 function getTodayKey() {
   const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
 
-  return `${year}-${month}-${day}`;
+  return getDateKey(today);
+}
+
+function getRecurringDateKeys(startDateKey, endDateKey, repeatType, selectedWeekdays) {
+  const dateKeys = [];
+  const currentDate = new Date(`${startDateKey}T00:00:00`);
+  const endDate = new Date(`${endDateKey}T00:00:00`);
+
+  while (currentDate <= endDate) {
+    if (repeatType === "daily" || selectedWeekdays.includes(currentDate.getDay())) {
+      dateKeys.push(getDateKey(currentDate));
+
+      if (dateKeys.length > MAX_RECURRING_TASKS) {
+        return dateKeys;
+      }
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return dateKeys;
+}
+
+function getSelectedTaskType() {
+  return taskForm.querySelector('input[name="taskType"]:checked').value;
+}
+
+function getSelectedRepeatType() {
+  return taskForm.querySelector('input[name="repeatType"]:checked').value;
+}
+
+function getSelectedWeekdays() {
+  return Array.from(taskForm.querySelectorAll('input[name="weekdays"]:checked')).map((input) =>
+    Number(input.value)
+  );
+}
+
+function updateRecurringVisibility() {
+  const isRecurring = getSelectedTaskType() === "recurring";
+  recurringOptions.hidden = !isRecurring;
+
+  if (isRecurring) {
+    recurringStartDate.value = selectedDate;
+    recurringEndDate.value ||= selectedDate;
+  }
+}
+
+function updateWeekdayVisibility() {
+  weekdayOptions.hidden = getSelectedRepeatType() !== "weekdays";
+}
+
+function showFormMessage(message, type) {
+  formMessage.textContent = message;
+  formMessage.className = `form-message ${type}`;
+}
+
+function clearFormMessage() {
+  formMessage.textContent = "";
+  formMessage.className = "form-message";
 }
 
 function formatDateLabel(dateKey) {
@@ -339,6 +555,10 @@ function isValidTask(task) {
 
 function normalizeCategory(category) {
   return CATEGORIES.includes(category) ? category : DEFAULT_CATEGORY;
+}
+
+function isValidRecurringId(recurringId) {
+  return typeof recurringId === "string" && recurringId.trim() !== "";
 }
 
 function getDateKey(date) {

@@ -57,6 +57,55 @@
         </select>
         <button type="submit">Aggiungi</button>
       </div>
+
+      <fieldset class="task-type-field">
+        <legend>Tipo attività</legend>
+        <label class="radio-option">
+          <input type="radio" name="taskType" value="single" checked>
+          Attività singola
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="taskType" value="recurring">
+          Attività ricorrente
+        </label>
+      </fieldset>
+
+      <div id="recurringOptions" class="recurring-options" hidden>
+        <div class="recurring-date-row">
+          <label for="recurringStartDate">Data inizio</label>
+          <input type="date" id="recurringStartDate" name="recurringStartDate">
+        </div>
+
+        <div class="recurring-date-row">
+          <label for="recurringEndDate">Data fine</label>
+          <input type="date" id="recurringEndDate" name="recurringEndDate">
+        </div>
+
+        <fieldset class="repeat-field">
+          <legend>Ripetizione</legend>
+          <label class="radio-option">
+            <input type="radio" name="repeatType" value="daily" checked>
+            Ogni giorno
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="repeatType" value="weekdays">
+            Giorni specifici
+          </label>
+        </fieldset>
+
+        <fieldset id="weekdayOptions" class="weekday-options" hidden>
+          <legend>Giorni</legend>
+          <label><input type="checkbox" name="weekdays" value="1"> Lun</label>
+          <label><input type="checkbox" name="weekdays" value="2"> Mar</label>
+          <label><input type="checkbox" name="weekdays" value="3"> Mer</label>
+          <label><input type="checkbox" name="weekdays" value="4"> Gio</label>
+          <label><input type="checkbox" name="weekdays" value="5"> Ven</label>
+          <label><input type="checkbox" name="weekdays" value="6"> Sab</label>
+          <label><input type="checkbox" name="weekdays" value="0"> Dom</label>
+        </fieldset>
+      </div>
+
+      <p id="formMessage" class="form-message" aria-live="polite"></p>
     </form>
 
     <section class="tasks-section" aria-labelledby="tasks-title">
