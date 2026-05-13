@@ -16,102 +16,151 @@
       <h1>Obiettivi del giorno</h1>
     </header>
 
-    <section class="date-panel" aria-labelledby="date-title">
-      <div>
-        <h2 id="date-title">Giorno selezionato</h2>
-        <p id="selectedDateLabel" class="date-label"></p>
-      </div>
+    <nav class="app-tabs" aria-label="Sezioni app">
+      <button type="button" class="tab-button active" data-view="dayView">Giornata</button>
+      <button type="button" class="tab-button" data-view="goalsView">Obiettivi</button>
+    </nav>
 
-      <div class="date-controls">
-        <label for="datePicker">Scegli una data</label>
-        <div class="date-row">
-          <input type="date" id="datePicker" name="datePicker">
-          <button type="button" id="todayButton" class="secondary-button">Oggi</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="progress-panel" aria-live="polite">
-      <span id="progressText">0 completate su 0</span>
-      <div class="progress-bar" aria-hidden="true">
-        <div id="progressFill"></div>
-      </div>
-    </section>
-
-    <form id="taskForm" class="task-form">
-      <label for="taskInput">Nuova attività</label>
-      <div class="task-form-row">
-        <input
-          type="text"
-          id="taskInput"
-          name="taskInput"
-          placeholder="Scrivi un'attività"
-          autocomplete="off"
-          required
-        >
-        <select id="categorySelect" name="categorySelect" aria-label="Categoria">
-          <option value="Fisico">Fisico</option>
-          <option value="Studio">Studio</option>
-          <option value="Lavoro">Lavoro</option>
-          <option value="Altro" selected>Altro</option>
-        </select>
-        <button type="submit">Aggiungi</button>
-      </div>
-
-      <fieldset class="task-type-field">
-        <legend>Tipo attività</legend>
-        <label class="radio-option">
-          <input type="radio" name="taskType" value="single" checked>
-          Attività singola
-        </label>
-        <label class="radio-option">
-          <input type="radio" name="taskType" value="recurring">
-          Attività ricorrente
-        </label>
-      </fieldset>
-
-      <div id="recurringOptions" class="recurring-options" hidden>
-        <div class="recurring-date-row">
-          <label for="recurringStartDate">Data inizio</label>
-          <input type="date" id="recurringStartDate" name="recurringStartDate">
+    <section id="dayView">
+      <section class="date-panel" aria-labelledby="date-title">
+        <div>
+          <h2 id="date-title">Giorno selezionato</h2>
+          <p id="selectedDateLabel" class="date-label"></p>
         </div>
 
-        <div class="recurring-date-row">
-          <label for="recurringEndDate">Data fine</label>
-          <input type="date" id="recurringEndDate" name="recurringEndDate">
+        <div class="date-controls">
+          <label for="datePicker">Scegli una data</label>
+          <div class="date-row">
+            <input type="date" id="datePicker" name="datePicker">
+            <button type="button" id="todayButton" class="secondary-button">Oggi</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="progress-panel" aria-live="polite">
+        <span id="progressText">0 completate su 0</span>
+        <div class="progress-bar" aria-hidden="true">
+          <div id="progressFill"></div>
+        </div>
+      </section>
+
+      <form id="taskForm" class="task-form">
+        <label for="taskInput">Nuova attività</label>
+        <div class="task-form-row">
+          <input
+            type="text"
+            id="taskInput"
+            name="taskInput"
+            placeholder="Scrivi un'attività"
+            autocomplete="off"
+            required
+          >
+          <select id="categorySelect" name="categorySelect" aria-label="Categoria">
+            <option value="Fisico">Fisico</option>
+            <option value="Studio">Studio</option>
+            <option value="Lavoro">Lavoro</option>
+            <option value="Altro" selected>Altro</option>
+          </select>
+          <select id="taskGoalSelect" name="taskGoalSelect" aria-label="Obiettivo"></select>
+          <button type="submit">Aggiungi</button>
         </div>
 
-        <fieldset class="repeat-field">
-          <legend>Ripetizione</legend>
+        <fieldset class="task-type-field">
+          <legend>Tipo attività</legend>
           <label class="radio-option">
-            <input type="radio" name="repeatType" value="daily" checked>
-            Ogni giorno
+            <input type="radio" name="taskType" value="single" checked>
+            Attività singola
           </label>
           <label class="radio-option">
-            <input type="radio" name="repeatType" value="weekdays">
-            Giorni specifici
+            <input type="radio" name="taskType" value="recurring">
+            Attività ricorrente
           </label>
         </fieldset>
 
-        <fieldset id="weekdayOptions" class="weekday-options" hidden>
-          <legend>Giorni</legend>
-          <label><input type="checkbox" name="weekdays" value="1"> Lun</label>
-          <label><input type="checkbox" name="weekdays" value="2"> Mar</label>
-          <label><input type="checkbox" name="weekdays" value="3"> Mer</label>
-          <label><input type="checkbox" name="weekdays" value="4"> Gio</label>
-          <label><input type="checkbox" name="weekdays" value="5"> Ven</label>
-          <label><input type="checkbox" name="weekdays" value="6"> Sab</label>
-          <label><input type="checkbox" name="weekdays" value="0"> Dom</label>
-        </fieldset>
-      </div>
+        <div id="recurringOptions" class="recurring-options" hidden>
+          <div class="recurring-date-row">
+            <label for="recurringStartDate">Data inizio</label>
+            <input type="date" id="recurringStartDate" name="recurringStartDate">
+          </div>
 
-      <p id="formMessage" class="form-message" aria-live="polite"></p>
-    </form>
+          <div class="recurring-date-row">
+            <label for="recurringEndDate">Data fine</label>
+            <input type="date" id="recurringEndDate" name="recurringEndDate">
+          </div>
 
-    <section class="tasks-section" aria-labelledby="tasks-title">
-      <h2 id="tasks-title">Attività</h2>
-      <p id="emptyMessage" class="empty-message">Nessuna attività per questo giorno</p>
-      <ul id="taskList" class="task-list"></ul>
+          <fieldset class="repeat-field">
+            <legend>Ripetizione</legend>
+            <label class="radio-option">
+              <input type="radio" name="repeatType" value="daily" checked>
+              Ogni giorno
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="repeatType" value="weekdays">
+              Giorni specifici
+            </label>
+          </fieldset>
+
+          <fieldset id="weekdayOptions" class="weekday-options" hidden>
+            <legend>Giorni</legend>
+            <label><input type="checkbox" name="weekdays" value="1"> Lun</label>
+            <label><input type="checkbox" name="weekdays" value="2"> Mar</label>
+            <label><input type="checkbox" name="weekdays" value="3"> Mer</label>
+            <label><input type="checkbox" name="weekdays" value="4"> Gio</label>
+            <label><input type="checkbox" name="weekdays" value="5"> Ven</label>
+            <label><input type="checkbox" name="weekdays" value="6"> Sab</label>
+            <label><input type="checkbox" name="weekdays" value="0"> Dom</label>
+          </fieldset>
+        </div>
+
+        <p id="formMessage" class="form-message" aria-live="polite"></p>
+      </form>
+
+      <section class="tasks-section" aria-labelledby="tasks-title">
+        <h2 id="tasks-title">Attività</h2>
+        <p id="emptyMessage" class="empty-message">Nessuna attività per questo giorno</p>
+        <ul id="taskList" class="task-list"></ul>
+      </section>
+    </section>
+
+    <section id="goalsView" hidden>
+      <section class="goals-section" aria-labelledby="goals-title">
+        <h2 id="goals-title">Obiettivi</h2>
+        <form id="goalForm" class="goal-form">
+          <input type="hidden" id="goalEditId">
+
+          <label for="goalTitle">Titolo obiettivo</label>
+          <input type="text" id="goalTitle" name="goalTitle" placeholder="Scrivi un obiettivo">
+
+          <label for="goalCategory">Categoria</label>
+          <select id="goalCategory" name="goalCategory">
+            <option value="Fisico">Fisico</option>
+            <option value="Studio">Studio</option>
+            <option value="Lavoro">Lavoro</option>
+            <option value="Altro" selected>Altro</option>
+          </select>
+
+          <div class="goal-date-row">
+            <div>
+              <label for="goalStartDate">Data inizio</label>
+              <input type="date" id="goalStartDate" name="goalStartDate">
+            </div>
+            <div>
+              <label for="goalEndDate">Data fine opzionale</label>
+              <input type="date" id="goalEndDate" name="goalEndDate">
+            </div>
+          </div>
+
+          <div class="goal-form-actions">
+            <button type="submit" id="goalSubmitButton">Crea obiettivo</button>
+            <button type="button" id="goalCancelButton" class="secondary-button" hidden>Annulla</button>
+          </div>
+
+          <p id="goalMessage" class="form-message" aria-live="polite"></p>
+        </form>
+
+        <p id="emptyGoalsMessage" class="empty-message">Nessun obiettivo creato</p>
+        <ul id="goalList" class="goal-list"></ul>
+      </section>
     </section>
   </main>
 

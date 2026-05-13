@@ -79,6 +79,23 @@ button:focus-visible {
   margin-bottom: 20px;
 }
 
+.app-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tab-button {
+  background: #e7eee9;
+  color: var(--primary-dark);
+}
+
+.tab-button.active {
+  background: var(--primary);
+  color: #ffffff;
+}
+
 .eyebrow {
   margin: 0 0 6px;
   color: var(--primary);
@@ -107,7 +124,8 @@ h2 {
 .date-panel,
 .progress-panel,
 .task-form,
-.tasks-section {
+.tasks-section,
+.goals-section {
   margin-bottom: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -117,7 +135,8 @@ h2 {
 
 .date-panel,
 .task-form,
-.tasks-section {
+.tasks-section,
+.goals-section {
   padding: 16px;
 }
 
@@ -301,6 +320,13 @@ h2 {
   text-decoration: line-through;
 }
 
+.task-goal-reference {
+  grid-column: 2 / -1;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
 .task-actions {
   grid-column: 1 / -1;
   display: grid;
@@ -342,6 +368,61 @@ h2 {
   gap: 8px;
 }
 
+.goal-form {
+  display: grid;
+  gap: 10px;
+}
+
+.goal-form label {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.goal-date-row,
+.goal-form-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.goal-list {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.goal-item {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fbfcfb;
+}
+
+.goal-item h3,
+.goal-meta,
+.goal-progress-text {
+  margin: 0;
+}
+
+.goal-meta {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.goal-progress-text {
+  font-weight: 700;
+}
+
+.goal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 @media (min-width: 560px) {
   .app {
     padding-top: 34px;
@@ -359,7 +440,7 @@ h2 {
   }
 
   .task-form-row {
-    grid-template-columns: 1fr 150px auto;
+    grid-template-columns: 1fr 150px 180px auto;
   }
 
   .recurring-options {
@@ -388,6 +469,16 @@ h2 {
 
   .delete-choice-actions {
     grid-template-columns: auto auto auto;
+    justify-content: start;
+  }
+
+  .goal-date-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .goal-form-actions,
+  .goal-actions {
+    grid-template-columns: auto auto;
     justify-content: start;
   }
 }
