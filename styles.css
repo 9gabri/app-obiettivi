@@ -26,7 +26,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -45,7 +46,8 @@ button:active {
   transform: translateY(1px);
 }
 
-input {
+input,
+select {
   width: 100%;
   min-height: 48px;
   border: 1px solid var(--line);
@@ -56,6 +58,7 @@ input {
 }
 
 input:focus,
+select:focus,
 button:focus-visible {
   outline: 3px solid rgba(240, 184, 79, 0.45);
   outline-offset: 2px;
@@ -172,6 +175,25 @@ h2 {
 
 .task-list {
   display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.category-group {
+  display: grid;
+  gap: 10px;
+}
+
+.category-title {
+  margin: 0;
+  color: var(--primary-dark);
+  font-size: 0.95rem;
+}
+
+.category-task-list {
+  display: grid;
   gap: 10px;
   margin: 0;
   padding: 0;
@@ -221,6 +243,18 @@ h2 {
   background: var(--danger);
 }
 
+.save-edit-button {
+  background: var(--primary);
+}
+
+.task-item.editing {
+  grid-template-columns: 1fr;
+}
+
+.task-item.editing .task-actions {
+  grid-column: 1 / -1;
+}
+
 @media (min-width: 560px) {
   .app {
     padding-top: 34px;
@@ -233,9 +267,12 @@ h2 {
     align-items: end;
   }
 
-  .date-row,
-  .task-form-row {
+  .date-row {
     grid-template-columns: 1fr auto;
+  }
+
+  .task-form-row {
+    grid-template-columns: 1fr 150px auto;
   }
 
   .task-item {

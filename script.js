@@ -1,4 +1,6 @@
 const STORAGE_KEY = "obiettiviGiornalieri";
+const CATEGORIES = ["Fisico", "Studio", "Lavoro", "Altro"];
+const DEFAULT_CATEGORY = "Altro";
 
 const datePicker = document.getElementById("datePicker");
 const todayButton = document.getElementById("todayButton");
@@ -7,6 +9,7 @@ const progressText = document.getElementById("progressText");
 const progressFill = document.getElementById("progressFill");
 const taskForm = document.getElementById("taskForm");
 const taskInput = document.getElementById("taskInput");
+const categorySelect = document.getElementById("categorySelect");
 const taskList = document.getElementById("taskList");
 const emptyMessage = document.getElementById("emptyMessage");
 
@@ -36,11 +39,13 @@ taskForm.addEventListener("submit", (event) => {
   const task = {
     id: createTaskId(),
     text,
-    completed: false
+    completed: false,
+    category: normalizeCategory(categorySelect.value)
   };
 
   ensureTasksForSelectedDate().push(task);
   taskInput.value = "";
+  categorySelect.value = DEFAULT_CATEGORY;
   saveAndRender();
 });
 
@@ -49,6 +54,14 @@ taskList.addEventListener("click", (event) => {
   if (!taskItem) return;
 
   const taskId = taskItem.dataset.id;
+
+  if (event.target.matches(".save-edit-button")) {
+    saveEditedTask(taskItem);
+  }
+
+  if (event.target.matches(".cancel-edit-button")) {
+    render();
+  }
 
   if (event.target.matches(".delete-button")) {
     deleteTask(taskId);
@@ -90,7 +103,8 @@ function loadTasks() {
         .map((task) => ({
           id: task.id,
           text: task.text,
-          completed: task.completed
+          completed: task.completed,
+          category: normalizeCategory(task.category)
         }));
 
       if (cleanTasks.length > 0) {
@@ -126,38 +140,60 @@ function render() {
 
   taskList.innerHTML = "";
 
-  tasks.forEach((task) => {
-    const item = document.createElement("li");
-    item.className = `task-item${task.completed ? " completed" : ""}`;
-    item.dataset.id = task.id;
+  CATEGORIES.forEach((category) => {
+    const categoryTasks = tasks.filter((task) => normalizeCategory(task.category) === category);
+    if (categoryTasks.length === 0) return;
 
-    const checkbox = document.createElement("input");
-    checkbox.className = "task-checkbox";
-    checkbox.type = "checkbox";
-    checkbox.checked = task.completed;
-    checkbox.setAttribute("aria-label", `Completa ${task.text}`);
+    const group = document.createElement("li");
+    group.className = "category-group";
 
-    const text = document.createElement("span");
-    text.className = "task-text";
-    text.textContent = task.text;
+    const title = document.createElement("h3");
+    title.className = "category-title";
+    title.textContent = category;
 
-    const actions = document.createElement("div");
-    actions.className = "task-actions";
+    const groupList = document.createElement("ul");
+    groupList.className = "category-task-list";
 
-    const editButton = document.createElement("button");
-    editButton.className = "edit-button";
-    editButton.type = "button";
-    editButton.textContent = "Modifica";
+    categoryTasks.forEach((task) => {
+      groupList.append(createTaskElement(task));
+    });
 
-    const deleteButton = document.createElement("button");
-    deleteButton.className = "delete-button";
-    deleteButton.type = "button";
-    deleteButton.textContent = "Elimina";
-
-    actions.append(editButton, deleteButton);
-    item.append(checkbox, text, actions);
-    taskList.append(item);
+    group.append(title, groupList);
+    taskList.append(group);
   });
+}
+
+function createTaskElement(task) {
+  const item = document.createElement("li");
+  item.className = `task-item${task.completed ? " completed" : ""}`;
+  item.dataset.id = task.id;
+
+  const checkbox = document.createElement("input");
+  checkbox.className = "task-checkbox";
+  checkbox.type = "checkbox";
+  checkbox.checked = task.completed;
+  checkbox.setAttribute("aria-label", `Completa ${task.text}`);
+
+  const text = document.createElement("span");
+  text.className = "task-text";
+  text.textContent = task.text;
+
+  const actions = document.createElement("div");
+  actions.className = "task-actions";
+
+  const editButton = document.createElement("button");
+  editButton.className = "edit-button";
+  editButton.type = "button";
+  editButton.textContent = "Modifica";
+
+  const deleteButton = document.createElement("button");
+  deleteButton.className = "delete-button";
+  deleteButton.type = "button";
+  deleteButton.textContent = "Elimina";
+
+  actions.append(editButton, deleteButton);
+  item.append(checkbox, text, actions);
+  return item;
 }
 
 function getTasksForSelectedDate() {
@@ -181,18 +217,70 @@ function deleteTask(taskId) {
   saveAndRender();
 }
 
-// Usa un prompt semplice per mantenere la modifica testuale immediata e senza dipendenze.
+// Mostra un piccolo form inline per modificare testo e categoria.
 function editTask(taskId) {
   const task = findTask(taskId);
   if (!task) return;
 
-  const newText = prompt("Modifica attività", task.text);
-  if (newText === null) return;
+  render();
 
-  const cleanText = newText.trim();
-  if (!cleanText) return;
+  const taskItem = taskList.querySelector(`[data-id="${taskId}"]`);
+  if (!taskItem) return;
+
+  taskItem.classList.add("editing");
+  taskItem.innerHTML = "";
+
+  const editInput = document.createElement("input");
+  editInput.className = "edit-input";
+  editInput.type = "text";
+  editInput.value = task.text;
+  editInput.setAttribute("aria-label", "Testo attivita");
+
+  const editCategory = document.createElement("select");
+  editCategory.className = "edit-category";
+  editCategory.setAttribute("aria-label", "Categoria attivita");
+
+  CATEGORIES.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    option.selected = normalizeCategory(task.category) === category;
+    editCategory.append(option);
+  });
+
+  const actions = document.createElement("div");
+  actions.className = "task-actions";
+
+  const saveButton = document.createElement("button");
+  saveButton.className = "save-edit-button";
+  saveButton.type = "button";
+  saveButton.textContent = "Salva";
+
+  const cancelButton = document.createElement("button");
+  cancelButton.className = "cancel-edit-button secondary-button";
+  cancelButton.type = "button";
+  cancelButton.textContent = "Annulla";
+
+  actions.append(saveButton, cancelButton);
+  taskItem.append(editInput, editCategory, actions);
+  editInput.focus();
+}
+
+function saveEditedTask(taskItem) {
+  const task = findTask(taskItem.dataset.id);
+  if (!task) return;
+
+  const editInput = taskItem.querySelector(".edit-input");
+  const editCategory = taskItem.querySelector(".edit-category");
+  const cleanText = editInput.value.trim();
+
+  if (!cleanText) {
+    editInput.focus();
+    return;
+  }
 
   task.text = cleanText;
+  task.category = normalizeCategory(editCategory.value);
   saveAndRender();
 }
 
@@ -247,6 +335,10 @@ function isValidTask(task) {
     task.text.trim() !== "" &&
     typeof task.completed === "boolean"
   );
+}
+
+function normalizeCategory(category) {
+  return CATEGORIES.includes(category) ? category : DEFAULT_CATEGORY;
 }
 
 function getDateKey(date) {
