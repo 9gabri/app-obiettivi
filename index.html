@@ -19,6 +19,7 @@
     <nav class="app-tabs" aria-label="Sezioni app">
       <button type="button" class="tab-button active" data-view="dayView">Giornata</button>
       <button type="button" class="tab-button" data-view="goalsView">Obiettivi a lungo termine</button>
+      <button type="button" class="tab-button" data-view="dashboardView">Dashboard</button>
     </nav>
 
     <section id="dayView">
@@ -160,6 +161,62 @@
 
         <p id="emptyGoalsMessage" class="empty-message">Nessun obiettivo creato</p>
         <ul id="goalList" class="goal-list"></ul>
+      </section>
+    </section>
+
+    <section id="dashboardView" hidden>
+      <section class="dashboard-section" aria-labelledby="dashboard-title">
+        <h2 id="dashboard-title">Dashboard</h2>
+
+        <article class="dashboard-panel">
+          <h3>Settimana</h3>
+          <p id="weeklyRange" class="dashboard-range"></p>
+          <p id="weeklyEmptyMessage" class="empty-message">Nessuna attività in questa settimana</p>
+          <div id="weeklyStats" class="dashboard-content">
+            <div class="dashboard-numbers">
+              <div>
+                <span id="weeklyCompleted">0</span>
+                <small>Completate</small>
+              </div>
+              <div>
+                <span id="weeklyTotal">0</span>
+                <small>Totali</small>
+              </div>
+              <div>
+                <span id="weeklyPercent">0%</span>
+                <small>Completamento</small>
+              </div>
+            </div>
+            <p id="weeklyBestDay" class="dashboard-note"></p>
+            <p id="weeklyFullDays" class="dashboard-note"></p>
+            <ul id="weeklyCategories" class="dashboard-category-list"></ul>
+          </div>
+        </article>
+
+        <article class="dashboard-panel">
+          <h3>Mese</h3>
+          <p id="monthlyRange" class="dashboard-range"></p>
+          <p id="monthlyEmptyMessage" class="empty-message">Nessuna attività in questo mese</p>
+          <div id="monthlyStats" class="dashboard-content">
+            <div class="dashboard-numbers">
+              <div>
+                <span id="monthlyCompleted">0</span>
+                <small>Completate</small>
+              </div>
+              <div>
+                <span id="monthlyTotal">0</span>
+                <small>Totali</small>
+              </div>
+              <div>
+                <span id="monthlyPercent">0%</span>
+                <small>Completamento</small>
+              </div>
+            </div>
+            <p id="monthlyActiveDays" class="dashboard-note"></p>
+            <p id="monthlyFullDays" class="dashboard-note"></p>
+            <ul id="monthlyCategories" class="dashboard-category-list"></ul>
+          </div>
+        </article>
       </section>
     </section>
   </main>

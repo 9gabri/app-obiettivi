@@ -5,7 +5,7 @@ const DEFAULT_CATEGORY = "Altro";
 const MAX_RECURRING_TASKS = 366;
 
 const tabButtons = document.querySelectorAll(".tab-button");
-const views = document.querySelectorAll("#dayView, #goalsView");
+const views = document.querySelectorAll("#dayView, #goalsView, #dashboardView");
 const datePicker = document.getElementById("datePicker");
 const todayButton = document.getElementById("todayButton");
 const selectedDateLabel = document.getElementById("selectedDateLabel");
@@ -33,6 +33,24 @@ const goalCancelButton = document.getElementById("goalCancelButton");
 const goalMessage = document.getElementById("goalMessage");
 const goalList = document.getElementById("goalList");
 const emptyGoalsMessage = document.getElementById("emptyGoalsMessage");
+const weeklyRange = document.getElementById("weeklyRange");
+const weeklyEmptyMessage = document.getElementById("weeklyEmptyMessage");
+const weeklyStats = document.getElementById("weeklyStats");
+const weeklyCompleted = document.getElementById("weeklyCompleted");
+const weeklyTotal = document.getElementById("weeklyTotal");
+const weeklyPercent = document.getElementById("weeklyPercent");
+const weeklyBestDay = document.getElementById("weeklyBestDay");
+const weeklyFullDays = document.getElementById("weeklyFullDays");
+const weeklyCategories = document.getElementById("weeklyCategories");
+const monthlyRange = document.getElementById("monthlyRange");
+const monthlyEmptyMessage = document.getElementById("monthlyEmptyMessage");
+const monthlyStats = document.getElementById("monthlyStats");
+const monthlyCompleted = document.getElementById("monthlyCompleted");
+const monthlyTotal = document.getElementById("monthlyTotal");
+const monthlyPercent = document.getElementById("monthlyPercent");
+const monthlyActiveDays = document.getElementById("monthlyActiveDays");
+const monthlyFullDays = document.getElementById("monthlyFullDays");
+const monthlyCategories = document.getElementById("monthlyCategories");
 
 let goals = loadGoals();
 let tasksByDate = loadTasks();
@@ -342,6 +360,7 @@ function render() {
   });
 
   renderGoals();
+  renderDashboard();
 }
 
 function createTaskElement(task) {
@@ -645,6 +664,113 @@ function getGoalProgress(goalId) {
   return { completed, total, percent };
 }
 
+function renderDashboard() {
+  renderWeeklyDashboard();
+  renderMonthlyDashboard();
+}
+
+function renderWeeklyDashboard() {
+  const weekDates = getWeekDateKeys(selectedDate);
+  const stats = getPeriodStats(weekDates);
+
+  weeklyRange.textContent = `${formatShortDate(weekDates[0])} - ${formatShortDate(weekDates[6])}`;
+  weeklyEmptyMessage.hidden = stats.total > 0;
+  weeklyStats.hidden = stats.total === 0;
+
+  if (stats.total === 0) return;
+
+  weeklyCompleted.textContent = stats.completed;
+  weeklyTotal.textContent = stats.total;
+  weeklyPercent.textContent = `${stats.percent}%`;
+  weeklyBestDay.textContent = `Giorno migliore: ${formatBestDay(stats.bestDay)}`;
+  weeklyFullDays.textContent = `Giorni completati al 100%: ${stats.fullDays}`;
+  renderCategorySummary(weeklyCategories, stats.categories);
+}
+
+function renderMonthlyDashboard() {
+  const monthDates = getMonthDateKeys(selectedDate);
+  const stats = getPeriodStats(monthDates);
+
+  monthlyRange.textContent = formatMonthLabel(selectedDate);
+  monthlyEmptyMessage.hidden = stats.total > 0;
+  monthlyStats.hidden = stats.total === 0;
+
+  if (stats.total === 0) return;
+
+  monthlyCompleted.textContent = stats.completed;
+  monthlyTotal.textContent = stats.total;
+  monthlyPercent.textContent = `${stats.percent}%`;
+  monthlyActiveDays.textContent = `Giorni con almeno un'attività: ${stats.activeDays}`;
+  monthlyFullDays.textContent = `Giorni completati al 100%: ${stats.fullDays}`;
+  renderCategorySummary(monthlyCategories, stats.categories);
+}
+
+function getPeriodStats(dateKeys) {
+  const categories = CATEGORIES.reduce((summary, category) => {
+    summary[category] = { completed: 0, total: 0 };
+    return summary;
+  }, {});
+  let completed = 0;
+  let total = 0;
+  let activeDays = 0;
+  let fullDays = 0;
+  let bestDay = null;
+
+  dateKeys.forEach((dateKey) => {
+    const tasks = tasksByDate[dateKey] || [];
+    const dayTotal = tasks.length;
+    const dayCompleted = tasks.filter((task) => task.completed).length;
+
+    if (dayTotal > 0) {
+      activeDays += 1;
+    }
+
+    if (dayTotal > 0 && dayCompleted === dayTotal) {
+      fullDays += 1;
+    }
+
+    if (dayTotal > 0 && (!bestDay || dayCompleted > bestDay.completed)) {
+      bestDay = { dateKey, completed: dayCompleted };
+    }
+
+    tasks.forEach((task) => {
+      const category = normalizeCategory(task.category);
+      categories[category].total += 1;
+
+      if (task.completed) {
+        completed += 1;
+        categories[category].completed += 1;
+      }
+
+      total += 1;
+    });
+  });
+
+  return {
+    completed,
+    total,
+    percent: total === 0 ? 0 : Math.round((completed / total) * 100),
+    categories,
+    activeDays,
+    fullDays,
+    bestDay
+  };
+}
+
+function renderCategorySummary(list, categories) {
+  list.innerHTML = "";
+
+  CATEGORIES.forEach((category) => {
+    const summary = categories[category];
+    if (summary.total === 0) return;
+
+    const item = document.createElement("li");
+    const percent = Math.round((summary.completed / summary.total) * 100);
+    item.textContent = `${category}: ${summary.completed} su ${summary.total} (${percent}%)`;
+    list.append(item);
+  });
+}
+
 // Mostra un piccolo form inline per modificare testo e categoria.
 function editTask(taskId) {
   const task = findTask(taskId);
@@ -724,6 +850,32 @@ function getTodayKey() {
   const today = new Date();
 
   return getDateKey(today);
+}
+
+function getWeekDateKeys(dateKey) {
+  const date = new Date(`${dateKey}T00:00:00`);
+  const day = date.getDay();
+  const distanceFromMonday = day === 0 ? 6 : day - 1;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - distanceFromMonday);
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const currentDate = new Date(monday);
+    currentDate.setDate(monday.getDate() + index);
+    return getDateKey(currentDate);
+  });
+}
+
+function getMonthDateKeys(dateKey) {
+  const date = new Date(`${dateKey}T00:00:00`);
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  return Array.from({ length: daysInMonth }, (_, index) => {
+    const currentDate = new Date(year, month, index + 1);
+    return getDateKey(currentDate);
+  });
 }
 
 function getRecurringDateKeys(startDateKey, endDateKey, repeatType, selectedWeekdays) {
@@ -914,6 +1066,21 @@ function formatShortDate(dateKey) {
     month: "2-digit",
     year: "numeric"
   }).format(new Date(`${dateKey}T00:00:00`));
+}
+
+function formatMonthLabel(dateKey) {
+  return new Intl.DateTimeFormat("it-IT", {
+    month: "long",
+    year: "numeric"
+  }).format(new Date(`${dateKey}T00:00:00`));
+}
+
+function formatBestDay(bestDay) {
+  if (!bestDay) {
+    return "nessun giorno con attività";
+  }
+
+  return `${formatShortDate(bestDay.dateKey)} (${bestDay.completed} completate)`;
 }
 
 function getDateKey(date) {

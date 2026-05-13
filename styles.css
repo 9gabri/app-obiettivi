@@ -81,7 +81,7 @@ button:focus-visible {
 
 .app-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 8px;
   margin-bottom: 16px;
 }
@@ -125,7 +125,8 @@ h2 {
 .progress-panel,
 .task-form,
 .tasks-section,
-.goals-section {
+.goals-section,
+.dashboard-section {
   margin-bottom: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -136,7 +137,8 @@ h2 {
 .date-panel,
 .task-form,
 .tasks-section,
-.goals-section {
+.goals-section,
+.dashboard-section {
   padding: 16px;
 }
 
@@ -423,6 +425,71 @@ h2 {
   gap: 8px;
 }
 
+.dashboard-section {
+  display: grid;
+  gap: 14px;
+}
+
+.dashboard-panel {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fbfcfb;
+}
+
+.dashboard-panel h3,
+.dashboard-range,
+.dashboard-note {
+  margin: 0;
+}
+
+.dashboard-range,
+.dashboard-note {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.dashboard-content {
+  display: grid;
+  gap: 10px;
+}
+
+.dashboard-numbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.dashboard-numbers div {
+  display: grid;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.dashboard-numbers span {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.dashboard-numbers small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.dashboard-category-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 700;
+}
+
 @media (min-width: 560px) {
   .app {
     padding-top: 34px;
@@ -433,6 +500,10 @@ h2 {
     grid-template-columns: 1fr 1.4fr;
     gap: 18px;
     align-items: end;
+  }
+
+  .app-tabs {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .date-row {

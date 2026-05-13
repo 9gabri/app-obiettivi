@@ -1,4 +1,4 @@
-const CACHE_NAME = "app-obiettivi-v7";
+const CACHE_NAME = "app-obiettivi-v8";
 const APP_FILES = [
   "./",
   "./index.html",
