@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Obiettivi giornalieri</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <p class="eyebrow">Pianificazione quotidiana</p>
+      <h1>Obiettivi del giorno</h1>
+    </header>
+
+    <section class="date-panel" aria-labelledby="date-title">
+      <div>
+        <h2 id="date-title">Giorno selezionato</h2>
+        <p id="selectedDateLabel" class="date-label"></p>
+      </div>
+
+      <div class="date-controls">
+        <label for="datePicker">Scegli una data</label>
+        <div class="date-row">
+          <input type="date" id="datePicker" name="datePicker">
+          <button type="button" id="todayButton" class="secondary-button">Oggi</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="progress-panel" aria-live="polite">
+      <span id="progressText">0 completate su 0</span>
+      <div class="progress-bar" aria-hidden="true">
+        <div id="progressFill"></div>
+      </div>
+    </section>
+
+    <form id="taskForm" class="task-form">
+      <label for="taskInput">Nuova attività</label>
+      <div class="task-form-row">
+        <input
+          type="text"
+          id="taskInput"
+          name="taskInput"
+          placeholder="Scrivi un'attività"
+          autocomplete="off"
+          required
+        >
+        <button type="submit">Aggiungi</button>
+      </div>
+    </form>
+
+    <section class="tasks-section" aria-labelledby="tasks-title">
+      <h2 id="tasks-title">Attività</h2>
+      <p id="emptyMessage" class="empty-message">Nessuna attività per questo giorno</p>
+      <ul id="taskList" class="task-list"></ul>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
